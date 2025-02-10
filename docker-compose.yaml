@@ -1,0 +1,28 @@
+services:
+  calendar-bot:
+    build: ./calendar_bot
+    container_name: calendar_bot
+    ports:
+      - "8000:8000"  # Expose the calendar bot's web server on port 8000
+    env_file:
+      - ./calendar_bot/.env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+    volumes:
+      - ./calendar_bot/credentials.json:/app/credentials.json:ro
+      - ./calendar_bot/token.pickle:/secret/token.pickle:rw
+
+
+  slack-bot:
+    build: ./slack_bot
+    container_name: slack_bot
+    env_file:
+      - ./slack_bot/.env
+    ports:
+      - "8001:8001"  # Expose the slack bot's web server on port 8001 (if needed)
+    environment:
+      - SLACK_CHANNEL=#all-vketteni  # or another channel your bot will post to
+      # If the Slack bot needs to reach the calendar bot:
+      - CALENDAR_BOT_URL=http://calendar-bot:8000
+    depends_on:
+      - calendar-bot
